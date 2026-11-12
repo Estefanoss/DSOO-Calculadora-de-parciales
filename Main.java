@@ -14,23 +14,22 @@ public class Main {
 
         // 3. Registrar las 3 Fases Académicas
         // Fase 1: peso 30% del ciclo | Continua: 12.0 | Parcial: 08.0 (nota baja)
-        NotaContinua nc1 = new NotaContinua(0.40, 12.0);
-        ExamenParcial ep1 = new ExamenParcial(1, 0.60, 8.0);
-        Fase fase1 = new Fase(1, 0.30, nc1, ep1);
+        NotaContinua nc1 = new NotaContinua(0.10, 11.0);
+        ExamenParcial ep1 = new ExamenParcial(1, 0.15, 11.0);
+        Fase fase1 = new Fase(1, 1, nc1, ep1);
         fase1.setCerrada(true);
         dsoo.agregarFase(fase1);
 
         // Fase 2: peso 30% del ciclo | Continua: 13.0 | Parcial: 07.0 (nota más baja)
-        NotaContinua nc2 = new NotaContinua(0.40, 13.0);
-        ExamenParcial ep2 = new ExamenParcial(2, 0.60, 7.0);
-        Fase fase2 = new Fase(2, 0.30, nc2, ep2);
+        NotaContinua nc2 = new NotaContinua(0.10, 11.0);
+        ExamenParcial ep2 = new ExamenParcial(2, 0.20, 11.0);
+        Fase fase2 = new Fase(2, 1, nc2, ep2);
         fase2.setCerrada(true);
         dsoo.agregarFase(fase2);
-
         // Fase 3: peso 40% del ciclo | Continua: 11.0 | Parcial: 10.0
-        NotaContinua nc3 = new NotaContinua(0.40, 11.0);
-        ExamenParcial ep3 = new ExamenParcial(3, 0.60, 10.0);
-        Fase fase3 = new Fase(3, 0.40, nc3, ep3);
+        NotaContinua nc3 = new NotaContinua(0.15, 11.0);
+        ExamenParcial ep3 = new ExamenParcial(3, 0.30, 11.0);
+        Fase fase3 = new Fase(3, 1, nc3, ep3);
         fase3.setCerrada(true);
         dsoo.agregarFase(fase3);
 
@@ -42,9 +41,8 @@ public class Main {
             System.out.println("---------------------------------------------------------");
 
             for (Fase f : cursoBuscado.getListaFases()) {
-                System.out.printf("Fase %d (Peso %.0f%%) -> Continua: %.2f | Parcial: %.2f | Prom. Fase: %.2f | Aporte Final: %.2f%n",
+                System.out.printf("Fase %d -> Continua: %.2f | Parcial: %.2f | Prom. Fase: %.2f | Aporte Final: %.2f%n",
                         f.getNumeroFase(),
-                        f.getPorcentajePonderado() * 100,
                         f.getContinua().getNota(),
                         f.getExamen().getNota(),
                         f.calcularPromedioFase(),
