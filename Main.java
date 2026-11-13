@@ -5,7 +5,6 @@ public class Main {
         System.out.println("   Nota mínima aprobatoria: " + ReglamentoUNSA.NOTA_APROBATORIA);
         System.out.println("=========================================================\n");
 
-        // 1. Inicializar el Gestor Académico
         GestorAcademico gestor = new GestorAcademico();
 
         // 2. Crear un curso (Ej. 40% Continua, 60% Examen Parcial)
