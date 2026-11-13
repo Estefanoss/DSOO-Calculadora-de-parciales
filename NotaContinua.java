@@ -11,6 +11,6 @@ public class NotaContinua extends Evaluacion {
 
     @Override
     public boolean aplicarSustitutorio(double nuevaNota) {
-        return false; // Por lo general, la nota continua no es reemplazable
+        return false;
     }
 }
