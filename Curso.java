@@ -2,16 +2,12 @@ import java.util.ArrayList;
 
 public class Curso {
     private String nombre;
-    private double pesoContinua;
-    private double pesoExamen;
     private ArrayList<Fase> fases;
     private ExamenSustitutorio sustitutorio;
     private double notaAprobatoriaMinima;
 
-    public Curso(String nombre, double pesoContinua, double pesoExamen) {
+    public Curso(String nombre) {
         this.nombre = nombre;
-        this.pesoContinua = pesoContinua;
-        this.pesoExamen = pesoExamen;
         this.fases = new ArrayList<>();
         this.notaAprobatoriaMinima = ReglamentoUNSA.NOTA_APROBATORIA;
     }
@@ -23,7 +19,7 @@ public class Curso {
     public double calcularPromedioPonderadoActual() {
         double suma = 0;
         for (Fase f : fases) {
-            suma += f.calcularAporteFinal();
+            suma += f.calcularAporteTotal();
         }
         return suma;
     }

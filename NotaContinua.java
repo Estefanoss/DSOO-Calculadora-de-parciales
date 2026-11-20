@@ -1,5 +1,4 @@
 public class NotaContinua extends Evaluacion {
-
     public NotaContinua(double peso, double nota) {
         super(peso, nota, false); 
     }
