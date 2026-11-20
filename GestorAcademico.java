@@ -8,7 +8,9 @@ public class GestorAcademico {
     }
 
     public void agregarCurso(Curso curso) {
-        this.listaCursos.add(curso);
+        if (curso != null) {
+            this.listaCursos.add(curso);
+        }
     }
 
     public Curso buscarCurso(String nombre) {
@@ -20,9 +22,19 @@ public class GestorAcademico {
         return null;
     }
 
-    public void calcularEstadoGeneralSemestre() {
-        
+    public double calcularPromedioPonderadoSemestral() {
+        double sumaCreditos = 0;
+        double sumaProductos = 0;
+        for (Curso c : listaCursos) {
+            if (c.getCreditos() > 0) {
+                sumaProductos += c.obtenerNotaFinalRedondeada() * c.getCreditos();
+                sumaCreditos += c.getCreditos();
+            }
+        }
+        return (sumaCreditos == 0) ? 0.0 : (sumaProductos / sumaCreditos);
     }
 
-    public ArrayList<Curso> getListaCursos() { return listaCursos; }
+    public ArrayList<Curso> getListaCursos() {
+        return listaCursos;
+    }
 }

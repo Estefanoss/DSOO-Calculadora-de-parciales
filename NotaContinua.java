@@ -1,16 +1,42 @@
-public class NotaContinua extends Evaluacion {
+import java.util.ArrayList;
 
-    public NotaContinua(double peso, double nota) {
-        super(peso, nota, false); 
+public class NotaContinua extends Evaluacion {
+    private ArrayList<Double> subNotas; // Tareas, exposiciones, laboratorios, prácticas
+
+    public NotaContinua(String etiqueta, double peso, double nota) {
+        super(etiqueta, peso, nota, false);
+        this.subNotas = new ArrayList<>();
+    }
+
+    public void agregarSubNota(double subNota) {
+        if (subNota >= ReglamentoUNSA.NOTA_MINIMA && subNota <= ReglamentoUNSA.NOTA_MAXIMA) {
+            subNotas.add(subNota);
+            recalcularNotaDesdeSubNotas();
+        }
+    }
+
+    public void recalcularNotaDesdeSubNotas() {
+        if (!subNotas.isEmpty()) {
+            double suma = 0;
+            for (double n : subNotas) {
+                suma += n;
+            }
+            this.nota = suma / subNotas.size();
+        }
+    }
+
+    public ArrayList<Double> getSubNotas() {
+        return subNotas;
     }
 
     @Override
-    public double calcularAporteFase() {
-        return nota * peso;
+    public double calcularAporte() {
+        return this.nota * this.peso;
     }
 
     @Override
     public boolean aplicarSustitutorio(double nuevaNota) {
-        return false; // Por lo general, la nota continua no es reemplazable
+        // Por reglamento, la nota continua no es sustituible
+        return false;
     }
 }
