@@ -1,6 +1,6 @@
+import java.io.Serializable;
 import java.util.ArrayList;
-
-public class GestorAcademico {
+public class GestorAcademico implements Serializable{
     private ArrayList<Curso> listaCursos;
 
     public GestorAcademico() {
@@ -32,6 +32,5 @@ public class GestorAcademico {
     public void calcularEstadoGeneralSemestre() {
         
     }
-
     public ArrayList<Curso> getListaCursos() { return listaCursos; }
 }

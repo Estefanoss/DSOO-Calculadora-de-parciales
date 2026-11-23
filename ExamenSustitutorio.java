@@ -1,7 +1,7 @@
 
+import java.io.Serializable;
 import java.util.ArrayList;
-
-public class ExamenSustitutorio {
+public class ExamenSustitutorio implements Serializable {
     private double nota;
     private ExamenParcial examenReemplazado;
     private boolean aplicado;

@@ -1,4 +1,5 @@
-public class Fase {
+import java.io.Serializable;
+public class Fase implements Serializable{
     private int numeroFase;
     private NotaContinua continua;
     private ExamenParcial examen;

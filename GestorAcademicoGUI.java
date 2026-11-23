@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import javax.swing.*;
 public class GestorAcademicoGUI extends JFrame{
     private JLabel Curso, Fase, CantFase, NotaContinua,NotaParcial, PesoContinua, PesoParcial;
@@ -213,7 +214,41 @@ public class GestorAcademicoGUI extends JFrame{
             PanelCursosMensaje.setForeground(new Color(20, 40, 80));
             JPanel btnArchivos= new JPanel();
                 btnGuardar = new JButton("Guardar");
+                btnGuardar.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e){
+                        String nombre = JOptionPane.showInputDialog(GestorAcademicoGUI.this, "Nombre con el que desea guardarlo");
+                        try{
+                            ObjectOutputStream ObjOut = new ObjectOutputStream(new FileOutputStream(nombre+".dat",false));
+                            ObjOut.writeObject(gestor);
+                            gestor = new GestorAcademico();
+
+                        }catch(IOException a){
+                            JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Error");
+                        }
+                            actualizarCurrentStatus();
+                            actualizarPanelCursos();
+                            actualizarComboCursos();
+                    }
+                });
                 btnCargar = new JButton("Cargar");
+                btnCargar.addActionListener(new ActionListener(){
+                    public void actionPerformed(ActionEvent e){
+                        String nombre = JOptionPane.showInputDialog(GestorAcademicoGUI.this, "Nombre del archivo que va a cargar: ");
+                        try{
+                        ObjectInputStream ObjIn = new ObjectInputStream(new FileInputStream(nombre+".dat"));
+                        gestor = (GestorAcademico) ObjIn.readObject();
+                        }catch(IOException a){
+                            JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Error");
+                        }catch(ClassNotFoundException cls){
+                            JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "No se encontro la clase");
+                        }
+                        finally{
+                            actualizarComboCursos();
+                            actualizarPanelCursos();
+                            actualizarCurrentStatus();
+                        }
+                    }
+                });
             btnArchivos.add(btnGuardar);
             btnArchivos.add(btnCargar);
         RightPanel.add(PanelCursosMensaje);

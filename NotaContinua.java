@@ -1,4 +1,5 @@
-public class NotaContinua extends Evaluacion {
+import java.io.Serializable;
+public class NotaContinua extends Evaluacion implements Serializable {
     public NotaContinua(double peso, double nota) {
         super(peso, nota, false); 
     }

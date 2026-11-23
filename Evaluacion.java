@@ -1,4 +1,5 @@
-public abstract class Evaluacion {
+import java.io.Serializable;
+public abstract class Evaluacion implements Serializable {
     protected double peso;
     protected double nota;
     protected boolean esReemplazable;

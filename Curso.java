@@ -1,6 +1,6 @@
+import java.io.Serializable;
 import java.util.ArrayList;
-
-public class Curso {
+public class Curso implements Serializable{
     private String nombre;
     private ArrayList<Fase> fases;
     private ExamenSustitutorio sustitutorio;
@@ -38,7 +38,7 @@ public class Curso {
             ExamenParcial ep1 = fases.get(0).getExamen();
             ExamenParcial ep2 = fases.get(1).getExamen();
             ExamenParcial ep3 = fases.get(2).getExamen();
-            ExamenParcial optimo = this.sustitutorio.evaluarReemplazoOptimo(ep1, ep2, ep3);
+            ExamenParcial optimo = this.sustitutorio.evaluarReemplazoOptimo(ep1, ep2);
             return this.sustitutorio.aplicarReemplazo(optimo);
         }
         return false;

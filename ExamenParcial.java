@@ -1,4 +1,5 @@
-public class ExamenParcial extends Evaluacion {
+import java.io.Serializable;
+public class ExamenParcial extends Evaluacion implements Serializable {
     private int numeroParcial;
     private double notaOriginal;
 
