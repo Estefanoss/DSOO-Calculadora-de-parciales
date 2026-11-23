@@ -3,7 +3,6 @@ public class NotaContinua extends Evaluacion implements Serializable {
     public NotaContinua(double peso, double nota) {
         super(peso, nota, false); 
     }
-
     @Override
     public double calcularAporteFase() {
         if(nota==-1)

@@ -28,9 +28,5 @@ public class GestorAcademico implements Serializable{
         }
         listaCursos.remove(pos);
     }
-
-    public void calcularEstadoGeneralSemestre() {
-        
-    }
     public ArrayList<Curso> getListaCursos() { return listaCursos; }
 }
