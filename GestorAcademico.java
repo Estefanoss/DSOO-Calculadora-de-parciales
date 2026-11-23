@@ -19,6 +19,15 @@ public class GestorAcademico {
         }
         return null;
     }
+    public void eliminarCurso(String nombre){
+        int pos=0;
+        for(int i=0;i<listaCursos.size();i++){
+            if(listaCursos.get(i).getNombre().equals(nombre)){
+                pos = i;
+            }
+        }
+        listaCursos.remove(pos);
+    }
 
     public void calcularEstadoGeneralSemestre() {
         

@@ -5,6 +5,8 @@ public class NotaContinua extends Evaluacion {
 
     @Override
     public double calcularAporteFase() {
+        if(nota==-1)
+            return 0;
         return nota * peso;
     }
 

@@ -8,7 +8,10 @@ public class Fase {
         this.numeroFase = numeroFase;
         this.continua = continua;
         this.examen = examen;
-        this.cerrada = true;
+        if(continua.getNota() !=-1 && examen.getNota() != -1 && continua.getPeso() !=1 && examen.getPeso()!=1)
+            this.cerrada = true;
+        else
+            this.cerrada = false;
     }
     public double calcularAporteTotal() {
         return continua.calcularAporteFase() + examen.calcularAporteFase();

@@ -10,6 +10,8 @@ public class ExamenParcial extends Evaluacion {
 
     @Override
     public double calcularAporteFase() {
+        if(nota==-1)
+            return 0*peso;
         return nota * peso;
     }
 
