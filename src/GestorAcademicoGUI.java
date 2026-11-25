@@ -12,13 +12,21 @@ public class GestorAcademicoGUI extends JFrame{
     public GestorAcademicoGUI(){
         setSize(Toolkit.getDefaultToolkit().getScreenSize());
         setLocationRelativeTo(null);
-        setTitle("SEMESTRE ESTADO");
-        setLayout(new GridLayout(1,2));
+        setTitle("AppCu");
+        setLayout(new BorderLayout());
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         createsContents();
         setVisible(true);
     } 
     public void createsContents(){
+        JPanel Titulo =  new JPanel();
+            JLabel nombreAPP = new JLabel("Bienvenido a AppCu, esperamos que este pasando un bonito dia...");
+            nombreAPP.setFont(new Font("Segoe UI",Font.BOLD,18));
+            nombreAPP.setForeground(Color.WHITE);
+            Titulo.setBackground(new Color(27, 54, 93));
+        Titulo.add(nombreAPP);
+        add(Titulo,BorderLayout.NORTH);
+        JPanel Body = new JPanel(new GridLayout(1,2));
         JPanel LeftPanel = new JPanel(new GridLayout(2,1));
             JPanel MenuPanel = new JPanel();
                 JPanel NewCourse = new JPanel();
@@ -37,6 +45,7 @@ public class GestorAcademicoGUI extends JFrame{
                     NewCourseElements.add(NewCourseFase);
                         JPanel ButtonCourse = new JPanel();
                             btnCurso = new JButton("Agregar Curso");
+                            btnCurso.setBackground(new Color(197, 160, 89));
                             btnCurso.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent e){
                                     String nombre = txtCurso.getText().trim();
@@ -65,7 +74,7 @@ public class GestorAcademicoGUI extends JFrame{
                                                     gestor.agregarCurso(curso);
                                                     txtCurso.setText("");
                                                     txtCantFase.setText("");
-                                                    if(gestor.getListaCursos().size() > 0){
+                                                    if(!gestor.getListaCursos().isEmpty()){
                                                         NewFaseEnabled(true);
                                                     }
                                                     actualizarPanelCursos();
@@ -105,7 +114,7 @@ public class GestorAcademicoGUI extends JFrame{
                                         actualizarComboCursos();
                                         actualizarPanelCursos();
                                         actualizarCurrentStatus();
-                                        if(gestor.getListaCursos().size() == 0){
+                                        if(gestor.getListaCursos().isEmpty()){
                                             NewFaseEnabled(false);
                                         }
                                     }
@@ -152,6 +161,7 @@ public class GestorAcademicoGUI extends JFrame{
                         JPanel ButtonFase = new JPanel();
                             btnFase = new JButton("Modificar Notas");
                             btnFase.setEnabled(false);
+                            btnFase.setBackground(new Color(197, 160, 89));
                             btnFase.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent e){
                                     int nFase;
@@ -198,36 +208,36 @@ public class GestorAcademicoGUI extends JFrame{
             MenuPanel.add(NewFase);
         LeftPanel.add(MenuPanel);
             JPanel CurrentStatus = new JPanel();
-                SummaryCourses = new JPanel(new GridLayout(0,3,5,15));
+                SummaryCourses = new JPanel(new GridLayout(0,4,10,15));
                 JLabel SummaryCoursesMensaje = new JLabel("Estado Actual de los Cursos del Semestre");
-                SummaryCoursesMensaje.setFont(new Font("SansSerif", Font.BOLD, 15));
-                SummaryCoursesMensaje.setForeground(new Color(20, 40, 80));
+                SummaryCoursesMensaje.setFont(new Font("SansSerif", Font.BOLD, 14));
+                SummaryCoursesMensaje.setForeground(new Color(27, 54, 93));
             CurrentStatus.add(SummaryCoursesMensaje);
             CurrentStatus.add(SummaryCourses);
 
         LeftPanel.add(CurrentStatus);
         JPanel RightPanel = new JPanel();
-            PanelCursos = new JPanel(new GridLayout(0,2,10,5));
+            PanelCursos = new JPanel(new GridLayout(0,2,15,0));
             JLabel PanelCursosMensaje = new JLabel("Lista de Cursos del Semestre");
-            PanelCursosMensaje.setFont(new Font("SansSerif", Font.BOLD, 15));
-            PanelCursosMensaje.setForeground(new Color(20, 40, 80));
+            PanelCursosMensaje.setFont(new Font("SansSerif", Font.BOLD, 14));
+            PanelCursosMensaje.setForeground(new Color(27, 54, 93));
             JPanel btnArchivos= new JPanel();
                 btnGuardar = new JButton("Guardar");
+                btnGuardar.setBackground(new Color(197, 160, 89));
                 btnGuardar.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e){
                         String nombre = JOptionPane.showInputDialog(GestorAcademicoGUI.this, "Nombre con el que desea guardarlo");
                         if(nombre == null || nombre.equals("") || nombre.equals(" ")){
-                            JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Ingrese un nombre");
+                            JOptionPane.showMessageDialog(GestorAcademicoGUI.this,"No se guardo, ingrese un nombre","Guardar",JOptionPane.ERROR_MESSAGE);
                         }
                         else{
-                            try{
-                            ObjectOutputStream ObjOut = new ObjectOutputStream(new FileOutputStream(nombre+".dat",false));
+                            try(ObjectOutputStream ObjOut = new ObjectOutputStream(new FileOutputStream(nombre+".dat",false))){
                             ObjOut.writeObject(gestor);
                             ObjOut.close();
+                            JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Se guardo correctamente","Guardar",JOptionPane.INFORMATION_MESSAGE);
                             gestor = new GestorAcademico();
-
                         }catch(IOException a){
-                            JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Error");
+                            JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Error","Guardado",JOptionPane.ERROR_MESSAGE);
                         }
                             actualizarCurrentStatus();
                             actualizarPanelCursos();
@@ -238,25 +248,27 @@ public class GestorAcademicoGUI extends JFrame{
                     }
                 });
                 btnCargar = new JButton("Cargar");
+                btnCargar.setBackground(new Color(197, 160, 89));
                 btnCargar.addActionListener(new ActionListener(){
                     public void actionPerformed(ActionEvent e){
                         String nombre = JOptionPane.showInputDialog(GestorAcademicoGUI.this, "Nombre del archivo que va a cargar: ");
                         if(nombre == null||nombre.equals("") || nombre.equals(" ")){
-                            JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Ingrese un nombre para poder cargar");
+                            JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Ingrese un nombre para poder cargar","Cargar",JOptionPane.ERROR_MESSAGE);
                         }
                         else{
                             try{
                                 ObjectInputStream ObjIn = new ObjectInputStream(new FileInputStream(nombre+".dat"));
                                 gestor = (GestorAcademico) ObjIn.readObject();
                                 ObjIn.close();
-                                if(gestor.getListaCursos().size()!=0){
+                                if(!gestor.getListaCursos().isEmpty()){
                                     NewFaseEnabled(true);
                                 }
                                 else{
                                     NewFaseEnabled(false);
                                 }
+                                JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Se cargo correctamente","Cargar",JOptionPane.INFORMATION_MESSAGE);
                             }catch(IOException a){
-                                JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "No se encontro el archivo");
+                                JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "No se encontro el archivo","Cargar", JOptionPane.ERROR_MESSAGE);
                             }catch(ClassNotFoundException cls){
                                 System.out.println("Clase GestorAcademico Inexistente");
                             }
@@ -269,18 +281,19 @@ public class GestorAcademicoGUI extends JFrame{
                     }
                 });
                 btnBorrar = new JButton("Borrar");
+                btnBorrar.setBackground(new Color(197, 160, 89));
                 btnBorrar.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e){
                         String nombre = JOptionPane.showInputDialog(GestorAcademicoGUI.this, "Nombre del archivo que va a eliminar: ");
                         if(nombre == null || nombre.equals("") || nombre.equals(" ")){
-                            JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Ingrese un nombre para poder eliminar");
+                            JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Ingrese un nombre para poder eliminar","Borrar",JOptionPane.ERROR_MESSAGE);
                         }
                         else{
                             File archivo = new File(nombre+".dat");
                             int respuesta = JOptionPane.showConfirmDialog(GestorAcademicoGUI.this, "Esta seguro??");
                             if (respuesta == JOptionPane.YES_OPTION){
                                 archivo.delete();
-                                JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Se elimino correctamente del equipo");
+                                JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Se elimino correctamente del equipo","Borrar",JOptionPane.INFORMATION_MESSAGE);
                             }
                         }
                     }
@@ -291,13 +304,13 @@ public class GestorAcademicoGUI extends JFrame{
         RightPanel.add(PanelCursosMensaje);
         RightPanel.add(PanelCursos);
         RightPanel.add(btnArchivos);
-        add(LeftPanel);
-        add(RightPanel);
-    
+        Body.add(LeftPanel);
+        Body.add(RightPanel);
+        add(Body,BorderLayout.CENTER);
     }
     private void actualizarPanelCursos(){
         PanelCursos.removeAll();
-        JPanel PanelCursoN = new JPanel(new GridLayout(0,1,1,1));
+        JPanel PanelCursoN = new JPanel(new GridLayout(0,1,10,0));
         double valorNotaFinal = 0;
         for (Curso c : gestor.getListaCursos()) { 
             String nombre = c.getNombre();
@@ -321,18 +334,19 @@ public class GestorAcademicoGUI extends JFrame{
                 PanelCursoN.add(fLabel);
                 PanelCursos.add(PanelCursoN);
             }
-            JLabel aporteLabel = new JLabel("    Nota Final Acumulada:  "+valorNotaFinal);
+            JLabel aporteLabel = new JLabel("   Nota Final Acumulada:  "+valorNotaFinal);
             aporteLabel.setFont(new Font("SansSerif", Font.ITALIC+Font.BOLD, 12));
             aporteLabel.setForeground(new Color(20, 40, 80));
             PanelCursoN.add(aporteLabel);
             PanelCursoN = new JPanel(new GridLayout(0,1,5,5));
+            valorNotaFinal=0;
         }
         PanelCursos.revalidate();
         PanelCursos.repaint();
     }
     private void actualizarComboCursos(){
         String[] nombres = new String[gestor.getListaCursos().size()+1];
-        if(gestor.getListaCursos().size()!=0){
+        if(!gestor.getListaCursos().isEmpty()){
             nombres[0] = "Seleccione un curso"; 
         }
         int c=0;
@@ -356,7 +370,7 @@ public class GestorAcademicoGUI extends JFrame{
                 valorNotaFinal += f.calcularAporteTotal();
             }
         
-            JLabel fLabel = new JLabel();
+            JLabel fLabel;
             if(valorNotaFinal<10.5 && ExamenSustitutorio.esElegible(c.getListaFases())){
                 fLabel = new JLabel("Desaprobado");
                 fLabel.setForeground(Color.RED);
