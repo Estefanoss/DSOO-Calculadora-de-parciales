@@ -1,7 +1,8 @@
 import java.util.ArrayList;
 
 public class NotaContinua extends Evaluacion {
-    private ArrayList<Double> subNotas; // Tareas, exposiciones, laboratorios, prácticas
+    private static final long serialVersionUID = 1L;
+    private ArrayList<Double> subNotas;
 
     public NotaContinua(String etiqueta, double peso, double nota) {
         super(etiqueta, peso, nota, false);
@@ -17,7 +18,7 @@ public class NotaContinua extends Evaluacion {
 
     public void recalcularNotaDesdeSubNotas() {
         if (!subNotas.isEmpty()) {
-            double suma = 0;
+            double suma = 0.0;
             for (double n : subNotas) {
                 suma += n;
             }
@@ -36,7 +37,6 @@ public class NotaContinua extends Evaluacion {
 
     @Override
     public boolean aplicarSustitutorio(double nuevaNota) {
-        // Por reglamento, la nota continua no es sustituible
-        return false;
+        return false; // La nota continua no se sustituye
     }
 }

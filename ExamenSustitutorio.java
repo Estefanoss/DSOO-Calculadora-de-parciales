@@ -1,4 +1,7 @@
-public class ExamenSustitutorio {
+import java.io.Serializable;
+
+public class ExamenSustitutorio implements Serializable {
+    private static final long serialVersionUID = 1L;
     private double nota;
     private ExamenParcial examenReemplazado;
     private boolean aplicado;
@@ -8,12 +11,12 @@ public class ExamenSustitutorio {
         this.aplicado = false;
     }
 
-    // Solo procede después de Fase 2 cerrada y antes de Fase 3
-    public boolean esElegible(boolean fase1Cerrada, boolean fase2Cerrada, boolean fase3Cerrada) {
-        return fase1Cerrada && fase2Cerrada && !fase3Cerrada;
+    // Solo procede tras cerrar Fase 1 y Fase 2, y antes de registrar Fase 3
+    public boolean esElegible(boolean fase1Cerrada, boolean fase2Cerrada, boolean fase3Registrada) {
+        return fase1Cerrada && fase2Cerrada && !fase3Registrada;
     }
 
-    // Selecciona únicamente el examen de menor nota entre Parcial 1 y Parcial 2
+    // Selecciona el examen de menor nota únicamente entre Parcial 1 y Parcial 2
     public ExamenParcial seleccionarExamenMinimoFase1o2(ExamenParcial parcial1, ExamenParcial parcial2) {
         if (parcial1 == null && parcial2 == null) {
             return null;
@@ -27,7 +30,6 @@ public class ExamenSustitutorio {
         return (parcial2.getNota() < parcial1.getNota()) ? parcial2 : parcial1;
     }
 
-    // Aplica el reemplazo directo sobre el examen seleccionado (sin importar si nota es menor)
     public boolean aplicarReemplazoDirecto(ExamenParcial parcial1, ExamenParcial parcial2) {
         ExamenParcial objetivo = seleccionarExamenMinimoFase1o2(parcial1, parcial2);
         if (objetivo != null && objetivo.aplicarSustitutorio(this.nota)) {

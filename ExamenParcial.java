@@ -1,10 +1,10 @@
 public class ExamenParcial extends Evaluacion {
-    private int numeroParcial; // 1, 2 o 3
+    private static final long serialVersionUID = 1L;
+    private int numeroParcial;
     private double notaOriginal;
     private boolean fueSustituido;
 
     public ExamenParcial(int numeroParcial, String etiqueta, double peso, double nota) {
-        // Solo los parciales 1 y 2 pueden ser sustituidos antes del 3er parcial
         super(etiqueta, peso, nota, numeroParcial == 1 || numeroParcial == 2);
         this.numeroParcial = numeroParcial;
         this.notaOriginal = nota;
@@ -21,7 +21,7 @@ public class ExamenParcial extends Evaluacion {
         if (!esReemplazable) {
             return false;
         }
-        // Reemplazo incondicional: reemplaza la nota mínima elegida sea mayor o menor
+        // Reemplazo incondicional sobre el examen elegido (suba o baje la nota)
         this.nota = nuevaNota;
         this.fueSustituido = true;
         return true;

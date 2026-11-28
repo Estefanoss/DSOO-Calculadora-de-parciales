@@ -1,6 +1,8 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Curso {
+public class Curso implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String nombre;
     private int creditos;
     private ArrayList<Fase> fases;
@@ -46,11 +48,11 @@ public class Curso {
     }
 
     public double calcularPesoRegistrado() {
-        double pesoTotal = 0.0;
+        double total = 0.0;
         for (Fase f : fases) {
-            pesoTotal += f.calcularPesoFase();
+            total += f.calcularPesoFase();
         }
-        return pesoTotal;
+        return total;
     }
 
     public double calcularPesoRestante() {
@@ -67,9 +69,9 @@ public class Curso {
         Fase f3 = buscarFase(3);
         boolean f1Ok = (f1 != null && f1.isCerrada());
         boolean f2Ok = (f2 != null && f2.isCerrada());
-        boolean f3NoDada = (f3 == null);
-        ExamenSustitutorio temp = new ExamenSustitutorio(0);
-        return temp.esElegible(f1Ok, f2Ok, f3NoDada);
+        boolean f3Registrada = (f3 != null);
+        ExamenSustitutorio validador = new ExamenSustitutorio(0.0);
+        return validador.esElegible(f1Ok, f2Ok, f3Registrada);
     }
 
     public ExamenParcial obtenerExamenObjetivoSustitutorio() {
@@ -78,8 +80,8 @@ public class Curso {
         }
         Fase f1 = buscarFase(1);
         Fase f2 = buscarFase(2);
-        ExamenSustitutorio temp = new ExamenSustitutorio(0);
-        return temp.seleccionarExamenMinimoFase1o2(f1.getExamen(), f2.getExamen());
+        ExamenSustitutorio selector = new ExamenSustitutorio(0.0);
+        return selector.seleccionarExamenMinimoFase1o2(f1.getExamen(), f2.getExamen());
     }
 
     public boolean registrarSustitutorio(double notaSustitutorio) {

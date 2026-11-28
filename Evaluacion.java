@@ -1,6 +1,9 @@
-public abstract class Evaluacion {
+import java.io.Serializable;
+
+public abstract class Evaluacion implements Serializable {
+    private static final long serialVersionUID = 1L;
     protected String etiqueta;
-    protected double peso; // En formato decimal, ej: 0.20 para 20%
+    protected double peso; // Peso porcentual directo sobre el curso (ej: 0.20 = 20%)
     protected double nota;
     protected boolean esReemplazable;
 

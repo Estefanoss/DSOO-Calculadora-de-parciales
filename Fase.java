@@ -1,5 +1,8 @@
-public class Fase {
-    private int numeroFase; // 1, 2 o 3
+import java.io.Serializable;
+
+public class Fase implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private int numeroFase;
     private NotaContinua continua;
     private ExamenParcial examen;
     private boolean cerrada;
@@ -11,17 +14,17 @@ public class Fase {
         this.cerrada = true;
     }
 
-    // Suma directa del aporte ponderado de Continua + Examen de la fase
+    // Suma directa sin doble ponderación
     public double calcularPuntajeFase() {
-        double aporteContinua = (continua != null) ? continua.calcularAporte() : 0.0;
-        double aporteExamen = (examen != null) ? examen.calcularAporte() : 0.0;
-        return aporteContinua + aporteExamen;
+        double aporteC = (continua != null) ? continua.calcularAporte() : 0.0;
+        double aporteE = (examen != null) ? examen.calcularAporte() : 0.0;
+        return aporteC + aporteE;
     }
 
     public double calcularPesoFase() {
-        double pesoContinua = (continua != null) ? continua.getPeso() : 0.0;
-        double pesoExamen = (examen != null) ? examen.getPeso() : 0.0;
-        return pesoContinua + pesoExamen;
+        double pesoC = (continua != null) ? continua.getPeso() : 0.0;
+        double pesoE = (examen != null) ? examen.getPeso() : 0.0;
+        return pesoC + pesoE;
     }
 
     public int getNumeroFase() { return numeroFase; }

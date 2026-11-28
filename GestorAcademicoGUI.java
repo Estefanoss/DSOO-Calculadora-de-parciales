@@ -1,427 +1,351 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class GestorAcademicoGUI extends JFrame {
 
     private static final Color COLOR_ROJO_UNSA = new Color(138, 21, 36);
-    private static final Color COLOR_GUINDA_OSCURO = new Color(92, 12, 22);
     private static final Color COLOR_DORADO = new Color(212, 160, 23);
     private static final Color COLOR_FONDO = new Color(245, 246, 248);
     private static final Color COLOR_BLANCO = Color.WHITE;
-    private static final Color COLOR_TEXTO = new Color(33, 37, 41);
 
-    private GestorAcademico gestor;
-    private JTabbedPane tabbedPane;
+    private final GestorAcademico gestor = new GestorAcademico();
 
-    // Componentes pestaña Cursos
     private JTextField txtNombreCurso, txtCreditosCurso;
-    private DefaultListModel<String> modeloListaCursos;
-
-    // Componentes pestaña Fases y Pesos
-    private JComboBox<String> cbCursosFase;
-    private JComboBox<Integer> cbNumeroFase;
-    private JTextField txtPesoContinua, txtNotaContinua;
-    private JTextField txtPesoExamen, txtNotaExamen;
-
-    // Componentes pestaña Sustitutorio y Análisis
-    private JComboBox<String> cbCursosAnalisis;
-    private JTextField txtNotaSustitutorio;
-    private JTextArea txtAreaReporte;
+    private JComboBox<String> cbCursos;
+    private JComboBox<Integer> cbFase;
+    private JTextField txtPesoC, txtNotaC, txtPesoE, txtNotaE, txtSusti;
+    private DefaultListModel<String> modeloCursos;
+    private JTextArea txtResumenDinamico;
 
     public GestorAcademicoGUI() {
-        this.gestor = new GestorAcademico();
-        configurarVentana();
-        construirInterfaz();
+        new File("datos").mkdirs();
+        RepositorioBD.inicializar();
+        for (Curso c : RepositorioBD.cargarTodo()) {
+            gestor.agregarCurso(c);
+        }
+
+        setTitle("UNSA — Simulador Académico Local");
+        setSize(980, 640);
+        setMinimumSize(new Dimension(840, 560));
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        construirUI();
+        actualizarTodoDinamico();
         setVisible(true);
     }
 
-    private void configurarVentana() {
-        setTitle("UNSA - Simulador Estratégico Académico");
-        setSize(820, 620);
-        setMinimumSize(new Dimension(720, 540));
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+    private void construirUI() {
+        setLayout(new BorderLayout(8, 8));
         getContentPane().setBackground(COLOR_FONDO);
-        setLayout(new BorderLayout());
-    }
 
-    private void construirInterfaz() {
-        // Encabezado UNSA
-        JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(COLOR_ROJO_UNSA);
-        header.setBorder(new EmptyBorder(14, 20, 14, 20));
+        JPanel top = new JPanel(new BorderLayout(0, 8));
+        top.setBackground(COLOR_ROJO_UNSA);
+        top.setBorder(new EmptyBorder(12, 16, 12, 16));
 
-        JLabel lblUniversidad = new JLabel("UNIVERSIDAD NACIONAL DE SAN AGUSTÍN — UNSA");
-        lblUniversidad.setFont(new Font("SansSerif", Font.BOLD, 18));
-        lblUniversidad.setForeground(COLOR_BLANCO);
+        JLabel titulo = new JLabel("UNSA — SIMULADOR ACADÉMICO (BD LOCAL + ARCHIVOS)");
+        titulo.setForeground(COLOR_BLANCO);
+        titulo.setFont(new Font("SansSerif", Font.BOLD, 15));
 
-        JLabel lblSubtitulo = new JLabel("Simulador de Fases, Pesos Variables y Sustitutorio (Regla Pre-3er Parcial)");
-        lblSubtitulo.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        lblSubtitulo.setForeground(new Color(255, 235, 205));
+        JPanel barraArchivos = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        barraArchivos.setOpaque(false);
 
-        JPanel titulos = new JPanel(new GridLayout(2, 1, 0, 2));
-        titulos.setOpaque(false);
-        titulos.add(lblUniversidad);
-        titulos.add(lblSubtitulo);
-
-        JButton btnSalir = crearBoton("Salir", COLOR_GUINDA_OSCURO, COLOR_BLANCO);
-        btnSalir.addActionListener(e -> System.exit(0));
-
-        header.add(titulos, BorderLayout.WEST);
-        header.add(btnSalir, BorderLayout.EAST);
-        add(header, BorderLayout.NORTH);
-
-        // Pestañas principales
-        tabbedPane = new JTabbedPane();
-        tabbedPane.setFont(new Font("SansSerif", Font.BOLD, 13));
-        tabbedPane.setBorder(new EmptyBorder(10, 12, 12, 12));
-
-        tabbedPane.addTab("1. Cursos", crearPanelCursos());
-        tabbedPane.addTab("2. Fases y Pesos", crearPanelFases());
-        tabbedPane.addTab("3. Sustitutorio y Proyección", crearPanelAnalisis());
-
-        tabbedPane.addChangeListener(e -> refrescarCombosYLista());
-        add(tabbedPane, BorderLayout.CENTER);
-    }
-
-    private JPanel crearPanelCursos() {
-        JPanel panel = new JPanel(new BorderLayout(12, 12));
-        panel.setBackground(COLOR_FONDO);
-        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        JPanel form = new JPanel(new GridLayout(2, 2, 10, 10));
-        form.setBackground(COLOR_BLANCO);
-        form.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 224, 228)),
-                new EmptyBorder(15, 15, 15, 15)
-        ));
-
-        txtNombreCurso = new JTextField();
-        txtCreditosCurso = new JTextField();
-
-        form.add(crearEtiqueta("Nombre del Curso (ej. Estructuras Discretas II):"));
-        form.add(txtNombreCurso);
-        form.add(crearEtiqueta("Créditos del Curso (ej. 4):"));
-        form.add(txtCreditosCurso);
-
-        JButton btnAgregarCurso = crearBoton("Registrar Curso", COLOR_ROJO_UNSA, COLOR_BLANCO);
-        btnAgregarCurso.addActionListener(e -> registrarCurso());
-
-        JPanel topBox = new JPanel(new BorderLayout(0, 10));
-        topBox.setOpaque(false);
-        topBox.add(form, BorderLayout.CENTER);
-        topBox.add(btnAgregarCurso, BorderLayout.SOUTH);
-
-        modeloListaCursos = new DefaultListModel<>();
-        JList<String> listaVisual = new JList<>(modeloListaCursos);
-        listaVisual.setFont(new Font("Monospaced", Font.PLAIN, 13));
-        JScrollPane scroll = new JScrollPane(listaVisual);
-        scroll.setBorder(BorderFactory.createTitledBorder("Cursos Registrados en el Ciclo"));
-
-        panel.add(topBox, BorderLayout.NORTH);
-        panel.add(scroll, BorderLayout.CENTER);
-        return panel;
-    }
-
-    private JPanel crearPanelFases() {
-        JPanel panel = new JPanel(new BorderLayout(12, 12));
-        panel.setBackground(COLOR_FONDO);
-        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        JPanel grid = new JPanel(new GridLayout(6, 2, 10, 10));
-        grid.setBackground(COLOR_BLANCO);
-        grid.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 224, 228)),
-                new EmptyBorder(16, 16, 16, 16)
-        ));
-
-        cbCursosFase = new JComboBox<>();
-        cbNumeroFase = new JComboBox<>(new Integer[]{1, 2, 3});
-        txtPesoContinua = new JTextField("0.20");
-        txtNotaContinua = new JTextField();
-        txtPesoExamen = new JTextField("0.10");
-        txtNotaExamen = new JTextField();
-
-        grid.add(crearEtiqueta("Seleccionar Curso:"));
-        grid.add(cbCursosFase);
-
-        grid.add(crearEtiqueta("Fase / Parcial (1, 2 o 3):"));
-        grid.add(cbNumeroFase);
-
-        grid.add(crearEtiqueta("Peso Continua (decimal, ej. 0.20 = 20%):"));
-        grid.add(txtPesoContinua);
-
-        grid.add(crearEtiqueta("Nota Continua (0.0 - 20.0):"));
-        grid.add(txtNotaContinua);
-
-        grid.add(crearEtiqueta("Peso Examen Parcial (decimal, ej. 0.10 = 10%):"));
-        grid.add(txtPesoExamen);
-
-        grid.add(crearEtiqueta("Nota Examen Parcial (0.0 - 20.0):"));
-        grid.add(txtNotaExamen);
-
-        JButton btnGuardarFase = crearBoton("Guardar Fase y Pesos", COLOR_ROJO_UNSA, COLOR_BLANCO);
-        btnGuardarFase.addActionListener(e -> guardarFase());
-
-        JButton btnIrAnalisis = crearBoton("Ver Análisis y Sustitutorio →", COLOR_DORADO, COLOR_TEXTO);
-        btnIrAnalisis.addActionListener(e -> {
-            refrescarCombosYLista();
-            tabbedPane.setSelectedIndex(2);
-        });
-
-        JPanel botones = new JPanel(new GridLayout(1, 2, 12, 0));
-        botones.setOpaque(false);
-        botones.add(btnGuardarFase);
-        botones.add(btnIrAnalisis);
-
-        panel.add(grid, BorderLayout.CENTER);
-        panel.add(botones, BorderLayout.SOUTH);
-        return panel;
-    }
-
-    private JPanel crearPanelAnalisis() {
-        JPanel panel = new JPanel(new BorderLayout(12, 12));
-        panel.setBackground(COLOR_FONDO);
-        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        JPanel barraSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
-        barraSuperior.setBackground(COLOR_BLANCO);
-        barraSuperior.setBorder(BorderFactory.createLineBorder(new Color(220, 224, 228)));
-
-        cbCursosAnalisis = new JComboBox<>();
-        txtNotaSustitutorio = new JTextField(6);
-
-        JButton btnCalcular = crearBoton("Calcular y Proyectar", COLOR_ROJO_UNSA, COLOR_BLANCO);
-        btnCalcular.addActionListener(e -> mostrarAnalisis());
-
-        JButton btnAplicarSusti = crearBoton("Aplicar Sustitutorio (Pre-Fase 3)", COLOR_DORADO, COLOR_TEXTO);
-        btnAplicarSusti.addActionListener(e -> aplicarSustitutorioUI());
-
-        barraSuperior.add(crearEtiqueta("Curso:"));
-        barraSuperior.add(cbCursosAnalisis);
-        barraSuperior.add(btnCalcular);
-        barraSuperior.add(crearEtiqueta("Nota Susti:"));
-        barraSuperior.add(txtNotaSustitutorio);
-        barraSuperior.add(btnAplicarSusti);
-
-        txtAreaReporte = new JTextArea();
-        txtAreaReporte.setEditable(false);
-        txtAreaReporte.setFont(new Font("Monospaced", Font.PLAIN, 13));
-        txtAreaReporte.setBorder(new EmptyBorder(12, 12, 12, 12));
-
-        JScrollPane scroll = new JScrollPane(txtAreaReporte);
-        scroll.setBorder(BorderFactory.createTitledBorder("Reporte Académico UNSA"));
-
-        panel.add(barraSuperior, BorderLayout.NORTH);
-        panel.add(scroll, BorderLayout.CENTER);
-        return panel;
-    }
-
-    private void registrarCurso() {
-        String nombre = txtNombreCurso.getText().trim();
-        if (nombre.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Ingresa el nombre del curso.");
-            return;
+        ManejadorEventos listener = new ManejadorEventos();
+        String[] botonesArchivos = {
+            "Guardar .TXT", "Leer .TXT",
+            "Guardar .DAT", "Leer .DAT",
+            "Guardar .OBJ", "Cargar .OBJ"
+        };
+        for (String texto : botonesArchivos) {
+            JButton b = new JButton(texto);
+            b.setBackground(COLOR_DORADO);
+            b.setFocusPainted(false);
+            b.addActionListener(listener);
+            barraArchivos.add(b);
         }
-        try {
-            int creditos = Integer.parseInt(txtCreditosCurso.getText().trim());
-            if (creditos <= 0) {
-                JOptionPane.showMessageDialog(this, "Los créditos deben ser mayores a 0.");
+
+        top.add(titulo, BorderLayout.NORTH);
+        top.add(barraArchivos, BorderLayout.SOUTH);
+        add(top, BorderLayout.NORTH);
+
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, crearPanelCarga(listener), crearPanelResumen());
+        split.setDividerLocation(430);
+        add(split, BorderLayout.CENTER);
+    }
+
+    private JPanel crearPanelCarga(ActionListener listener) {
+        JPanel cont = new JPanel();
+        cont.setLayout(new BoxLayout(cont, BoxLayout.Y_AXIS));
+        cont.setBorder(new EmptyBorder(8, 8, 8, 8));
+        cont.setBackground(COLOR_FONDO);
+
+        JPanel pCurso = new JPanel(new GridLayout(3, 2, 6, 6));
+        pCurso.setBorder(BorderFactory.createTitledBorder("1. Curso"));
+        pCurso.setBackground(COLOR_BLANCO);
+        txtNombreCurso = new JTextField();
+        txtCreditosCurso = new JTextField("4");
+        JButton btnAddCurso = new JButton("Agregar Curso");
+        btnAddCurso.setBackground(COLOR_ROJO_UNSA);
+        btnAddCurso.setForeground(COLOR_BLANCO);
+        btnAddCurso.addActionListener(listener);
+
+        pCurso.add(new JLabel("Nombre:"));
+        pCurso.add(txtNombreCurso);
+        pCurso.add(new JLabel("Créditos:"));
+        pCurso.add(txtCreditosCurso);
+        pCurso.add(new JLabel(""));
+        pCurso.add(btnAddCurso);
+
+        JPanel pFase = new JPanel(new GridLayout(7, 2, 6, 6));
+        pFase.setBorder(BorderFactory.createTitledBorder("2. Fase (1, 2 o 3) y Pesos"));
+        pFase.setBackground(COLOR_BLANCO);
+        cbCursos = new JComboBox<>();
+        cbCursos.addActionListener(listener);
+        cbFase = new JComboBox<>(new Integer[]{1, 2, 3});
+        txtPesoC = new JTextField("0.20");
+        txtNotaC = new JTextField();
+        txtPesoE = new JTextField("0.10");
+        txtNotaE = new JTextField();
+        JButton btnGuardarFase = new JButton("Guardar y Actualizar");
+        btnGuardarFase.setBackground(COLOR_ROJO_UNSA);
+        btnGuardarFase.setForeground(COLOR_BLANCO);
+        btnGuardarFase.addActionListener(listener);
+
+        pFase.add(new JLabel("Curso:"));
+        pFase.add(cbCursos);
+        pFase.add(new JLabel("Fase:"));
+        pFase.add(cbFase);
+        pFase.add(new JLabel("Peso Continua (ej 0.20):"));
+        pFase.add(txtPesoC);
+        pFase.add(new JLabel("Nota Continua:"));
+        pFase.add(txtNotaC);
+        pFase.add(new JLabel("Peso Parcial (ej 0.10):"));
+        pFase.add(txtPesoE);
+        pFase.add(new JLabel("Nota Parcial:"));
+        pFase.add(txtNotaE);
+        pFase.add(new JLabel(""));
+        pFase.add(btnGuardarFase);
+
+        JPanel pSusti = new JPanel(new GridLayout(2, 2, 6, 6));
+        pSusti.setBorder(BorderFactory.createTitledBorder("3. Sustitutorio (Pre-Fase 3)"));
+        pSusti.setBackground(COLOR_BLANCO);
+        txtSusti = new JTextField();
+        JButton btnSusti = new JButton("Aplicar Sustitutorio");
+        btnSusti.setBackground(COLOR_DORADO);
+        btnSusti.addActionListener(listener);
+
+        pSusti.add(new JLabel("Nota Sustitutorio:"));
+        pSusti.add(txtSusti);
+        pSusti.add(new JLabel(""));
+        pSusti.add(btnSusti);
+
+        cont.add(pCurso);
+        cont.add(Box.createVerticalStrut(8));
+        cont.add(pFase);
+        cont.add(Box.createVerticalStrut(8));
+        cont.add(pSusti);
+        return cont;
+    }
+
+    private JPanel crearPanelResumen() {
+        JPanel p = new JPanel(new BorderLayout(8, 8));
+        p.setBorder(new EmptyBorder(8, 8, 8, 8));
+        p.setBackground(COLOR_FONDO);
+
+        modeloCursos = new DefaultListModel<>();
+        JList<String> lista = new JList<>(modeloCursos);
+        lista.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        JScrollPane spLista = new JScrollPane(lista);
+        spLista.setPreferredSize(new Dimension(0, 120));
+        spLista.setBorder(BorderFactory.createTitledBorder("Cursos Registrados (SQLite Local)"));
+
+        txtResumenDinamico = new JTextArea();
+        txtResumenDinamico.setEditable(false);
+        txtResumenDinamico.setLineWrap(true);
+        txtResumenDinamico.setWrapStyleWord(true);
+        txtResumenDinamico.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        JScrollPane spResumen = new JScrollPane(txtResumenDinamico);
+        spResumen.setBorder(BorderFactory.createTitledBorder("Resumen Dinámico / Contenido de Archivos"));
+
+        p.add(spLista, BorderLayout.NORTH);
+        p.add(spResumen, BorderLayout.CENTER);
+        return p;
+    }
+
+    private class ManejadorEventos implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == cbCursos) {
+                actualizarTodoDinamico();
                 return;
             }
-            gestor.agregarCurso(new Curso(nombre, creditos));
+            switch (e.getActionCommand()) {
+                case "Agregar Curso" -> agregarCurso();
+                case "Guardar y Actualizar" -> guardarFase();
+                case "Aplicar Sustitutorio" -> aplicarSustitutorio();
+                case "Guardar .TXT" -> {
+                    try {
+                        File f = new File("datos/reporte_unsa.txt");
+                        GestorArchivos.guardarTexto(f, gestor, cursoSeleccionado());
+                        JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Guardado en " + f.getPath());
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Error TXT: " + ex.getMessage());
+                    }
+                }
+                case "Leer .TXT" -> {
+                    try {
+                        txtResumenDinamico.setText(GestorArchivos.leerTexto(new File("datos/reporte_unsa.txt")));
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "No se pudo leer TXT: " + ex.getMessage());
+                    }
+                }
+                case "Guardar .DAT" -> {
+                    try {
+                        File f = new File("datos/resumen_binario.dat");
+                        GestorArchivos.guardarBinario(f, gestor);
+                        JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Guardado en " + f.getPath());
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Error DAT: " + ex.getMessage());
+                    }
+                }
+                case "Leer .DAT" -> {
+                    try {
+                        txtResumenDinamico.setText(GestorArchivos.leerBinario(new File("datos/resumen_binario.dat")));
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "No se pudo leer DAT: " + ex.getMessage());
+                    }
+                }
+                case "Guardar .OBJ" -> {
+                    try {
+                        File f = new File("datos/respaldo_cursos.obj");
+                        GestorArchivos.guardarObjetos(f, gestor.getListaCursos());
+                        JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Objetos guardados en " + f.getPath());
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Error OBJ: " + ex.getMessage());
+                    }
+                }
+                case "Cargar .OBJ" -> {
+                    try {
+                        ArrayList<Curso> cargados = GestorArchivos.leerObjetos(new File("datos/respaldo_cursos.obj"));
+                        gestor.getListaCursos().clear();
+                        for (Curso c : cargados) {
+                            gestor.agregarCurso(c);
+                            RepositorioBD.guardarCurso(c);
+                            for (Fase fase : c.getListaFases()) {
+                                RepositorioBD.guardarFase(c.getNombre(), fase);
+                            }
+                        }
+                        refrescarCombo(cargados.isEmpty() ? null : cargados.get(0).getNombre());
+                        actualizarTodoDinamico();
+                        JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "Objetos cargados y sincronizados con SQLite.");
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(GestorAcademicoGUI.this, "No se pudo cargar OBJ: " + ex.getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    private void agregarCurso() {
+        String nombre = txtNombreCurso.getText().trim();
+        if (nombre.isEmpty()) return;
+        try {
+            int cred = Integer.parseInt(txtCreditosCurso.getText().trim());
+            if (cred <= 0) return;
+            Curso c = new Curso(nombre, cred);
+            gestor.agregarCurso(c);
+            RepositorioBD.guardarCurso(c);
             txtNombreCurso.setText("");
-            txtCreditosCurso.setText("");
-            refrescarCombosYLista();
-            JOptionPane.showMessageDialog(this, "Curso registrado correctamente.");
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ingresa un número entero válido para los créditos.");
+            refrescarCombo(nombre);
+            actualizarTodoDinamico();
+        } catch (NumberFormatException ignored) {
+            JOptionPane.showMessageDialog(this, "Créditos inválidos.");
         }
     }
 
     private void guardarFase() {
-        String nombreCurso = (String) cbCursosFase.getSelectedItem();
-        Curso curso = gestor.buscarCurso(nombreCurso);
-        if (curso == null) {
-            JOptionPane.showMessageDialog(this, "Primero registra o selecciona un curso.");
-            return;
-        }
-
+        Curso curso = cursoSeleccionado();
+        if (curso == null) return;
         try {
-            int numFase = (Integer) cbNumeroFase.getSelectedItem();
-            double pesoC = Double.parseDouble(txtPesoContinua.getText().trim());
-            double notaC = Double.parseDouble(txtNotaContinua.getText().trim());
-            double pesoE = Double.parseDouble(txtPesoExamen.getText().trim());
-            double notaE = Double.parseDouble(txtNotaExamen.getText().trim());
+            int num = (Integer) cbFase.getSelectedItem();
+            double pC = Double.parseDouble(txtPesoC.getText().trim());
+            double nC = Double.parseDouble(txtNotaC.getText().trim());
+            double pE = Double.parseDouble(txtPesoE.getText().trim());
+            double nE = Double.parseDouble(txtNotaE.getText().trim());
 
-            if (pesoC < 0 || pesoE < 0 || pesoC > 1 || pesoE > 1) {
-                JOptionPane.showMessageDialog(this, "Los pesos deben estar en decimal entre 0.0 y 1.0 (ej. 0.20).");
-                return;
-            }
-            if (notaC < 0 || notaC > 20 || notaE < 0 || notaE > 20) {
-                JOptionPane.showMessageDialog(this, "Las notas deben estar entre 0.0 y 20.0.");
+            if (pC < 0 || pE < 0 || pC > 1 || pE > 1 || nC < 0 || nC > 20 || nE < 0 || nE > 20) {
+                JOptionPane.showMessageDialog(this, "Pesos entre 0 y 1; notas entre 0 y 20.");
                 return;
             }
 
-            double pesoNuevo = pesoC + pesoE;
-            Fase faseExistente = curso.buscarFase(numFase);
-            double pesoAnteriorMismaFase = (faseExistente != null) ? faseExistente.calcularPesoFase() : 0.0;
-            double pesoTotalProyectado = curso.calcularPesoRegistrado() - pesoAnteriorMismaFase + pesoNuevo;
-
-            if (pesoTotalProyectado > 1.0001) {
-                JOptionPane.showMessageDialog(this,
-                        String.format("La suma de pesos del curso excedería el 100%% (actual sin esta fase: %.0f%%, nuevo: %.0f%%).",
-                                (curso.calcularPesoRegistrado() - pesoAnteriorMismaFase) * 100,
-                                pesoNuevo * 100));
+            Fase anterior = curso.buscarFase(num);
+            double pesoSinEsta = curso.calcularPesoRegistrado() - (anterior != null ? anterior.calcularPesoFase() : 0.0);
+            if (pesoSinEsta + pC + pE > 1.0001) {
+                JOptionPane.showMessageDialog(this, "La suma de pesos del curso excede 100%.");
                 return;
             }
 
-            NotaContinua continua = new NotaContinua("Continua " + numFase, pesoC, notaC);
-            ExamenParcial examen = new ExamenParcial(numFase, "Examen " + numFase, pesoE, notaE);
-            Fase fase = new Fase(numFase, continua, examen);
-
-            curso.agregarOActualizarFase(fase);
-            txtNotaContinua.setText("");
-            txtNotaExamen.setText("");
-            refrescarCombosYLista();
-            JOptionPane.showMessageDialog(this, "Fase " + numFase + " guardada para " + curso.getNombre() + ".");
+            Fase f = new Fase(num, new NotaContinua("Continua " + num, pC, nC), new ExamenParcial(num, "Examen " + num, pE, nE));
+            curso.agregarOActualizarFase(f);
+            RepositorioBD.guardarFase(curso.getNombre(), f);
+            txtNotaC.setText("");
+            txtNotaE.setText("");
+            actualizarTodoDinamico();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Verifica que todos los pesos y notas sean números válidos.");
+            JOptionPane.showMessageDialog(this, "Revisa los números ingresados.");
         }
     }
 
-    private void aplicarSustitutorioUI() {
-        String nombreCurso = (String) cbCursosAnalisis.getSelectedItem();
-        Curso curso = gestor.buscarCurso(nombreCurso);
-        if (curso == null) {
-            JOptionPane.showMessageDialog(this, "Selecciona un curso.");
-            return;
-        }
-
+    private void aplicarSustitutorio() {
+        Curso curso = cursoSeleccionado();
+        if (curso == null) return;
         if (!curso.puedeRendirSustitutorio()) {
-            JOptionPane.showMessageDialog(this,
-                    "El sustitutorio solo aplica después de tener cerradas Fase 1 y Fase 2, y antes de registrar Fase 3.");
+            JOptionPane.showMessageDialog(this, "Solo disponible tras Fase 1 y 2 cerradas, y antes de Fase 3.");
             return;
         }
-
         try {
-            double notaSusti = Double.parseDouble(txtNotaSustitutorio.getText().trim());
-            if (notaSusti < 0 || notaSusti > 20) {
-                JOptionPane.showMessageDialog(this, "La nota del sustitutorio debe estar entre 0.0 y 20.0.");
-                return;
+            double notaS = Double.parseDouble(txtSusti.getText().trim());
+            if (notaS < 0 || notaS > 20) return;
+            curso.registrarSustitutorio(notaS);
+            for (Fase f : curso.getListaFases()) {
+                RepositorioBD.guardarFase(curso.getNombre(), f);
             }
-
-            ExamenParcial objetivo = curso.obtenerExamenObjetivoSustitutorio();
-            double notaAnterior = objetivo.getNota();
-            curso.registrarSustitutorio(notaSusti);
-
-            JOptionPane.showMessageDialog(this,
-                    "Sustitutorio aplicado a " + objetivo.getEtiqueta() +
-                    "\nNota anterior: " + notaAnterior + " -> Nueva nota: " + objetivo.getNota());
-            mostrarAnalisis();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ingresa una nota válida para el sustitutorio.");
+            txtSusti.setText("");
+            actualizarTodoDinamico();
+        } catch (NumberFormatException ignored) {
+            JOptionPane.showMessageDialog(this, "Nota de sustitutorio inválida.");
         }
     }
 
-    private void mostrarAnalisis() {
-        String nombreCurso = (String) cbCursosAnalisis.getSelectedItem();
-        Curso curso = gestor.buscarCurso(nombreCurso);
-        if (curso == null) {
-            txtAreaReporte.setText("No hay cursos registrados todavía.");
-            return;
-        }
-
-        double acumulado = curso.calcularPromedioPonderadoActual();
-        double pesoRegistrado = curso.calcularPesoRegistrado();
-        double pesoRestante = curso.calcularPesoRestante();
-        double faltante = curso.calcularPuntosFaltantes();
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("====================================================\n");
-        sb.append("UNSA - ANÁLISIS DE CURSO: ").append(curso.getNombre().toUpperCase()).append("\n");
-        sb.append("Créditos: ").append(curso.getCreditos()).append("\n");
-        sb.append("====================================================\n\n");
-
-        for (Fase f : curso.getListaFases()) {
-            sb.append(String.format("Fase %d -> Continua (peso %.0f%%): %.2f [pond: %.2f] | Examen %d (peso %.0f%%): %.2f [pond: %.2f]%n",
-                    f.getNumeroFase(),
-                    f.getContinua().getPeso() * 100,
-                    f.getContinua().getNota(),
-                    f.getContinua().calcularAporte(),
-                    f.getExamen().getNumeroParcial(),
-                    f.getExamen().getPeso() * 100,
-                    f.getExamen().getNota(),
-                    f.getExamen().calcularAporte()
-            ));
-        }
-
-        sb.append("\n----------------------------------------------------\n");
-        sb.append(String.format("Puntaje ponderado acumulado: %.2f%n", acumulado));
-        sb.append(String.format("Peso registrado: %.0f%% | Peso restante: %.0f%%%n", pesoRegistrado * 100, pesoRestante * 100));
-        sb.append(String.format("Nota mínima aprobatoria: %.2f%n", curso.getNotaAprobatoriaMinima()));
-
-        if (faltante <= 0) {
-            sb.append("Estado: APROBADO (superaste el puntaje mínimo requerido).\n");
-        } else {
-            sb.append(String.format("Puntos ponderados faltantes para 10.5: %.2f%n", faltante));
-            if (pesoRestante > 0) {
-                double notaPromedioNecesaria = faltante / pesoRestante;
-                sb.append(String.format("Nota promedio necesaria en el peso restante: %.2f%n", notaPromedioNecesaria));
-                if (notaPromedioNecesaria > 20.0) {
-                    sb.append("Alerta: supera la nota máxima (20.00).\n");
-                }
-            }
-        }
-
-        sb.append("\nSustitutorio (solo entre Fase 2 y Fase 3, reemplaza menor de Parcial 1 o 2): ");
-        sb.append(curso.puedeRendirSustitutorio() ? "DISPONIBLE AHORA" : "NO DISPONIBLE EN ESTE MOMENTO").append("\n");
-
-        if (curso.getSustitutorio() != null && curso.getSustitutorio().isAplicado()) {
-            ExamenParcial rep = curso.getSustitutorio().getExamenReemplazado();
-            sb.append(String.format("Último sustitutorio aplicado en %s: %.2f -> %.2f%n",
-                    rep.getEtiqueta(), rep.getNotaOriginal(), rep.getNota()));
-        }
-
-        sb.append(String.format("%nPromedio Ponderado Semestral (por créditos): %.2f%n", gestor.calcularPromedioPonderadoSemestral()));
-        txtAreaReporte.setText(sb.toString());
+    private Curso cursoSeleccionado() {
+        return gestor.buscarCurso((String) cbCursos.getSelectedItem());
     }
 
-    private void refrescarCombosYLista() {
-        String selFase = (String) cbCursosFase.getSelectedItem();
-        String selAnalisis = (String) cbCursosAnalisis.getSelectedItem();
-
-        cbCursosFase.removeAllItems();
-        cbCursosAnalisis.removeAllItems();
-        modeloListaCursos.clear();
-
+    private void refrescarCombo(String seleccionarNombre) {
+        cbCursos.removeAllItems();
         for (Curso c : gestor.getListaCursos()) {
-            cbCursosFase.addItem(c.getNombre());
-            cbCursosAnalisis.addItem(c.getNombre());
-            modeloListaCursos.addElement(String.format("%-28s | Cred: %d | Fases: %d/3 | Acum: %.2f",
-                    c.getNombre(), c.getCreditos(), c.getListaFases().size(), c.calcularPromedioPonderadoActual()));
+            cbCursos.addItem(c.getNombre());
         }
-
-        if (selFase != null) cbCursosFase.setSelectedItem(selFase);
-        if (selAnalisis != null) cbCursosAnalisis.setSelectedItem(selAnalisis);
+        if (seleccionarNombre != null) {
+            cbCursos.setSelectedItem(seleccionarNombre);
+        }
     }
 
-    private JLabel crearEtiqueta(String texto) {
-        JLabel lbl = new JLabel(texto);
-        lbl.setFont(new Font("SansSerif", Font.BOLD, 12));
-        lbl.setForeground(COLOR_TEXTO);
-        return lbl;
-    }
-
-    private JButton crearBoton(String texto, Color fondo, Color textoColor) {
-        JButton btn = new JButton(texto);
-        btn.setFont(new Font("SansSerif", Font.BOLD, 12));
-        btn.setBackground(fondo);
-        btn.setForeground(textoColor);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return btn;
+    private void actualizarTodoDinamico() {
+        String actual = (String) cbCursos.getSelectedItem();
+        if (cbCursos.getItemCount() != gestor.getListaCursos().size()) {
+            refrescarCombo(actual);
+        }
+        modeloCursos.clear();
+        for (Curso c : gestor.getListaCursos()) {
+            modeloCursos.addElement(String.format("%-22s | Cred:%d | Acum:%.2f",
+                    c.getNombre(), c.getCreditos(), c.calcularPromedioPonderadoActual()));
+        }
+        txtResumenDinamico.setText(ConstruirTextoAnalisis.generar(cursoSeleccionado(), gestor));
     }
 
     public static void main(String[] args) {
